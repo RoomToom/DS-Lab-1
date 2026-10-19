@@ -1,5 +1,5 @@
 import csv
-from typing import Dict, List, Union, TextIO
+from typing import Any, Dict, List, Union, TextIO
 
 try:
     from .utils import load_json
@@ -7,7 +7,7 @@ except ImportError:
     from utils import load_json
 
 
-def summarize_weather_data(data: List[Dict[str, any]]) -> Dict[str, float]:
+def summarize_weather_data(data: List[Dict[str, Any]]) -> Dict[str, float]:
     """
     Summarize the weather data across all days.
 
@@ -17,10 +17,21 @@ def summarize_weather_data(data: List[Dict[str, any]]) -> Dict[str, float]:
     Returns:
         dict: A summary of the key metrics across all days.
     """
-    pass
+    if not data:
+        raise ValueError("No daily weather data to summarize.")
+    return {
+        "average_max_temp": sum(day['max_temperature'] for day in data) / len(data),
+        "average_min_temp": sum(day['min_temperature'] for day in data) / len(data),
+        "total_precipitation": sum(day['precipitation'] for day in data),
+        "average_wind_speed": sum(day['wind_speed'] for day in data) / len(data),
+        "average_humidity": sum(day['humidity'] for day in data) / len(data),
+        "hot_days": sum(day['max_temperature'] > 30 for day in data),
+        "windy_days": sum(day['wind_speed'] > 15 for day in data),
+        "rainy_days": sum(day['precipitation'] > 0 for day in data),
+    }
 
 
-def export_to_csv(data: List[Dict[str, any]], file: Union[str, TextIO]) -> None:
+def export_to_csv(data: List[Dict[str, Any]], file: Union[str, TextIO]) -> None:
     """
     Export the summarized weather data to a CSV file or file-like object.
 
@@ -37,7 +48,20 @@ def export_to_csv(data: List[Dict[str, any]], file: Union[str, TextIO]) -> None:
         Args:
             writer (csv.DictWriter): The CSV writer object.
         """
-        pass
+        writer.writeheader()
+        for day in data:
+            writer.writerow(dict(zip(headers, [
+                day['date'], day['max_temperature'], day['min_temperature'],
+                day['precipitation'], day['wind_speed'], day['humidity'],
+                day['weather_description'], day['max_temperature'] > 30,
+                day['wind_speed'] > 15, day['precipitation'] > 0,
+            ])))
+
+    if isinstance(file, str):
+        with open(file, 'w', newline='', encoding='utf-8') as output:
+            write_data(csv.DictWriter(output, fieldnames=headers))
+    else:
+        write_data(csv.DictWriter(file, fieldnames=headers))
 
 
 if __name__ == "__main__":
@@ -62,4 +86,4 @@ if __name__ == "__main__":
 
         print("Data successfully exported to tokyo_weather_summary.csv")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        raise SystemExit(f"An error occurred: {e}")

@@ -1,9 +1,9 @@
 import xml.etree.ElementTree as ET
 import csv
-from typing import List, Dict
+from typing import Any, List, Dict
 
 
-def parse_weather_xml(xml_file: str) -> List[Dict[str, any]]:
+def parse_weather_xml(xml_file: str) -> List[Dict[str, Any]]:
     """
     Parse weather data from an XML file.
 
@@ -17,10 +17,21 @@ def parse_weather_xml(xml_file: str) -> List[Dict[str, any]]:
         FileNotFoundError: If the XML file does not exist.
         ET.ParseError: If the XML file is malformed.
     """
-    pass
+    root = ET.parse(xml_file).getroot()
+    data = []
+    for day in root.findall('day'):
+        if any(not day.findtext(key) for key in ('date', 'temperature', 'humidity', 'precipitation')):
+            raise ValueError("An XML day is missing a required weather field.")
+        data.append({
+            'date': day.findtext('date'),
+            'temperature': float(day.findtext('temperature')),
+            'humidity': int(day.findtext('humidity')),
+            'precipitation': float(day.findtext('precipitation')),
+        })
+    return data
 
 
-def save_to_csv(data: List[Dict[str, any]], filename: str = "parsed_weather_data.csv") -> None:
+def save_to_csv(data: List[Dict[str, Any]], filename: str = "parsed_weather_data.csv") -> None:
     """
     Save parsed weather data to a CSV file.
 
@@ -31,7 +42,11 @@ def save_to_csv(data: List[Dict[str, any]], filename: str = "parsed_weather_data
     Raises:
         IOError: If there is an error writing to the file.
     """
-    pass
+    with open(filename, 'w', newline='', encoding='utf-8') as output:
+        writer = csv.writer(output)
+        writer.writerow(['Date', 'Temperature', 'Humidity', 'Precipitation'])
+        writer.writerows([day['date'], day['temperature'], day['humidity'], day['precipitation']]
+                        for day in data)
 
 
 if __name__ == "__main__":
@@ -47,4 +62,4 @@ if __name__ == "__main__":
         save_to_csv(weather_data)
         print("Data has been successfully parsed and saved to parsed_weather_data.csv.")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        raise SystemExit(f"An error occurred: {e}")

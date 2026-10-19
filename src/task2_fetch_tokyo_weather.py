@@ -1,5 +1,6 @@
 import requests
-from typing import Dict
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict
 
 try:
     from .utils import save_to_json
@@ -7,7 +8,7 @@ except ImportError:
     from utils import save_to_json
 
 
-def fetch_weather_data() -> Dict[str, any]:
+def fetch_weather_data() -> Dict[str, Any]:
     """
     Fetch the maximum temperature forecast for Tokyo using the Open-Meteo API.
 
@@ -22,7 +23,16 @@ def fetch_weather_data() -> Dict[str, any]:
     url = ("https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917"
            "&daily=temperature_2m_max&timezone=Asia/Tokyo")
     
-    pass
+    tomorrow = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=1)).date().isoformat()
+    response = requests.get(url, params={"start_date": tomorrow, "end_date": tomorrow}, timeout=30)
+    response.raise_for_status()
+    daily = response.json()['daily']
+    if not daily['time'] or not daily['temperature_2m_max']:
+        raise ValueError("The API returned no daily temperature forecast.")
+    temperature = daily['temperature_2m_max'][0]
+    if temperature is None:
+        raise ValueError("The API returned a missing temperature.")
+    return {"date": daily['time'][0], "max_temperature": temperature}
 
 
 if __name__ == "__main__":
@@ -35,4 +45,4 @@ if __name__ == "__main__":
 
         print("Data successfully saved to tokyo_weather.json")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        raise SystemExit(f"An error occurred: {e}")

@@ -1,6 +1,6 @@
+import re
 import requests
 from bs4 import BeautifulSoup
-from typing import Dict
 
 try:
     from .utils import save_to_json
@@ -22,7 +22,9 @@ def fetch_wikipedia_page(url: str) -> str:
         requests.HTTPError: If the HTTP request returned an unsuccessful status code.
         requests.RequestException: If there was a network error.
     """
-    pass
+    response = requests.get(url, headers={"User-Agent": "DS-Lab-1/1.0 (https://github.com/RoomToom)"}, timeout=30)
+    response.raise_for_status()
+    return response.text
 
 
 def extract_title(soup: BeautifulSoup) -> str:
@@ -35,7 +37,10 @@ def extract_title(soup: BeautifulSoup) -> str:
     Returns:
         str: The title of the page.
     """
-    pass
+    heading = soup.find('h1', id='firstHeading')
+    if heading is None:
+        raise ValueError("Wikipedia page title was not found.")
+    return heading.get_text(strip=True)
 
 
 def extract_first_sentence(soup: BeautifulSoup) -> str:
@@ -48,7 +53,13 @@ def extract_first_sentence(soup: BeautifulSoup) -> str:
     Returns:
         str: The first sentence of the first paragraph.
     """
-    pass
+    content = soup.select_one('.mw-parser-output') or soup
+    for paragraph in content.find_all('p'):
+        text = re.sub(r'\[\d+\]', '', paragraph.get_text())
+        text = ' '.join(text.split())
+        if text:
+            return re.split(r'(?<=[.!?])\s+', text, maxsplit=1)[0]
+    raise ValueError("Wikipedia page has no non-empty paragraph.")
 
 
 if __name__ == "__main__":
@@ -77,4 +88,4 @@ if __name__ == "__main__":
 
         print("Data successfully saved to extracted_wikipedia_data.json")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        raise SystemExit(f"An error occurred: {e}")
