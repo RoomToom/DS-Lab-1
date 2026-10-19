@@ -54,6 +54,7 @@ def extract_first_sentence(soup: BeautifulSoup) -> str:
         str: The first sentence of the first paragraph.
     """
     content = soup.select_one('.mw-parser-output') or soup
+    # На сторінці Wikipedia перед основним текстом можуть бути порожні абзаци.
     for paragraph in content.find_all('p'):
         text = re.sub(r'\[\d+\]', '', paragraph.get_text())
         text = ' '.join(text.split())
@@ -68,22 +69,17 @@ if __name__ == "__main__":
         page_content = fetch_wikipedia_page(url)
         soup = BeautifulSoup(page_content, 'html.parser')
 
-        # Extract the title of the page
         title = extract_title(soup)
 
-        # Extract the first sentence of the first paragraph
         first_sentence = extract_first_sentence(soup)
 
-        # Combine the extracted data
         extracted_data = {
             "title": title,
             "first_sentence": first_sentence
         }
 
-        # Print the extracted data
         print("Extracted Data:", extracted_data)
 
-        # Save the data to a JSON file
         save_to_json(extracted_data, 'extracted_wikipedia_data.json')
 
         print("Data successfully saved to extracted_wikipedia_data.json")

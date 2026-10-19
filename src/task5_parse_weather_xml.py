@@ -51,14 +51,11 @@ def save_to_csv(data: List[Dict[str, Any]], filename: str = "parsed_weather_data
 
 if __name__ == "__main__":
     try:
-        # Parse the XML file
         import os
-        # Get the directory where this script is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
         xml_path = os.path.join(script_dir, "weather_data.xml")
         weather_data = parse_weather_xml(xml_path)
 
-        # Save the parsed data to a CSV file
         save_to_csv(weather_data)
         print("Data has been successfully parsed and saved to parsed_weather_data.csv.")
     except Exception as e:

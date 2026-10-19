@@ -13,7 +13,7 @@ def clean_text(line: str) -> str:
     Returns:
         str: The cleaned line of text.
     """
-    # Replace non-breaking spaces and other non-ASCII characters
+    # Нерозривний пробіл і знак мінуса замінюються перед видаленням не-ASCII символів.
     return line.replace('\u00a0', ' ').replace('\u2212', '-').encode('ascii', errors='ignore').decode('ascii').strip()
 
 
@@ -77,14 +77,11 @@ def save_to_csv(data: List[Dict[str, Any]], filename: str = "extracted_weather_d
 
 if __name__ == "__main__":
     try:
-        # Extract data from the text file
         import os
-        # Get the directory where this script is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
         txt_path = os.path.join(script_dir, "weather_report.txt")
         weather_data = extract_weather_data(txt_path)
 
-        # Save the extracted data to a CSV file
         save_to_csv(weather_data)
         print("Data has been successfully extracted and saved to extracted_weather_data.csv.")
     except Exception as e:

@@ -23,6 +23,7 @@ def fetch_weather_data() -> Dict[str, Any]:
     url = ("https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917"
            "&daily=temperature_2m_max&timezone=Asia/Tokyo")
     
+    # Дата прогнозу визначається за часом Токіо (UTC+9).
     tomorrow = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=1)).date().isoformat()
     response = requests.get(url, params={"start_date": tomorrow, "end_date": tomorrow}, timeout=30)
     response.raise_for_status()
@@ -37,10 +38,8 @@ def fetch_weather_data() -> Dict[str, Any]:
 
 if __name__ == "__main__":
     try:
-        # Fetch the weather data
         weather_data = fetch_weather_data()
 
-        # Save the data to a JSON file
         save_to_json(weather_data, "tokyo_weather.json")
 
         print("Data successfully saved to tokyo_weather.json")

@@ -54,6 +54,7 @@ def generate_daily_report(analysis: Dict[str, Any]) -> str:
     ]
     rain = analysis['precipitation']
     if analysis['is_rainy_day']:
+        # Межі для добових опадів: до 5 мм, 5–10 мм і понад 10 мм.
         severity = 'light' if rain < 5 else 'moderate' if rain <= 10 else 'heavy'
         lines.append(f"It was a rainy day: {severity} rain ({rain} mm).")
     else:
@@ -87,24 +88,19 @@ def summarize_weather_analysis(analyses: List[Dict[str, Any]]) -> str:
 
 if __name__ == "__main__":
     try:
-        # Load the JSON data
         import os
-        # Get the directory where this script is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
         json_path = os.path.join(script_dir, "tokyo_weather_complex.json")
         weather_data = load_json(json_path)
         print(f"City: {weather_data['city']} ({weather_data['latitude']}, {weather_data['longitude']})")
         print(f"Timezone: {weather_data['timezone']}\n")
 
-        # Analyze the weather data for each day
         analyses = [analyze_daily_weather(day) for day in weather_data['daily']]
 
-        # Generate and print daily reports
         for analysis in analyses:
             report = generate_daily_report(analysis)
             print(report)
 
-        # Generate and print a summary report
         summary_report = summarize_weather_analysis(analyses)
         print(summary_report)
     except Exception as e:

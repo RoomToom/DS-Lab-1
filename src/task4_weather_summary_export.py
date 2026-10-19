@@ -57,6 +57,7 @@ def export_to_csv(data: List[Dict[str, Any]], file: Union[str, TextIO]) -> None:
                 day['wind_speed'] > 15, day['precipitation'] > 0,
             ])))
 
+    # Переданий файловий об’єкт залишається відкритим для подальшого читання.
     if isinstance(file, str):
         with open(file, 'w', newline='', encoding='utf-8') as output:
             write_data(csv.DictWriter(output, fieldnames=headers))
@@ -66,22 +67,17 @@ def export_to_csv(data: List[Dict[str, Any]], file: Union[str, TextIO]) -> None:
 
 if __name__ == "__main__":
     try:
-        # Load the JSON data
         import os
-        # Get the directory where this script is located
         script_dir = os.path.dirname(os.path.abspath(__file__))
         json_path = os.path.join(script_dir, "tokyo_weather_complex.json")
         weather_data = load_json(json_path)
 
-        # Summarize the weather data
         summary = summarize_weather_data(weather_data['daily'])
 
-        # Print the summary for verification
         print("Weather Data Summary:")
         for key, value in summary.items():
             print(f"{key}: {value}")
 
-        # Export the summarized data to a CSV file
         export_to_csv(weather_data['daily'], "tokyo_weather_summary.csv")
 
         print("Data successfully exported to tokyo_weather_summary.csv")
